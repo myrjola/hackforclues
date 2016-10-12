@@ -1,0 +1,97 @@
+---
+# tasks file for visibike.jsondumpster
+
+# - name: Add EPEL repository
+#   yum: name=epel-release state=present
+
+- name: Install dependencies
+  apt: name={{ item }} state=present
+  with_items:
+    - python-pip
+    - python-dev
+    - python-psycopg2
+    - python-virtualenv
+    - libpq-dev
+    - postgresql
+    - postgresql-contrib
+    - nginx
+
+# - name: setup postgresql
+#   command: postgresql-setup initdb
+#   ignore_errors: yes
+
+- name: Enable and start postgresql
+  service: name=postgresql enabled=yes state=started
+
+- name: Create jsondumpster database
+  postgresql_db: name="{{ jsondumpster_db }}"
+  become_user: postgres
+
+- name: Create jsondumpster user
+  user: name="{{ jsondumpster_user }}"
+
+- name: Create jsondumpster postgres user
+  postgresql_user:
+    db="{{ jsondumpster_db }}"
+    name="{{ jsondumpster_user }}"
+  become_user: postgres
+
+- name: Delete app directory
+  file:
+    path="{{ jsondumpster_path }}"
+    state=absent
+
+- name: Create service root folder
+  file:
+    path="{{ jsondumpster_root }}"
+    state=directory
+    mode="755"
+    owner="{{ jsondumpster_user }}"
+    group="{{ jsondumpster_user }}"
+
+# TODO: there is certainly a better way to deploy the code than rsyncing it
+# over.
+- name: Copy over app
+  synchronize:
+    src="../../../../"
+    dest="{{ jsondumpster_path }}"
+
+- name: Set permissions
+  file:
+    path="{{ jsondumpster_path }}"
+    state=directory
+    recurse=yes
+    mode="700"
+    owner="{{ jsondumpster_user }}"
+    group="{{ jsondumpster_user }}"
+
+- name: Initialize virtualenv
+  pip:
+    requirements: "{{ jsondumpster_path }}/requirements.txt"
+    virtualenv: "{{ jsondumpster_venv }}"
+
+- name: Deploy systemd service
+  template: src=jsondumpster.service dest=/etc/systemd/system/jsondumpster.service
+
+- name: Reload daemon files
+  command: systemctl daemon-reload
+
+- name: Enable and restart systemd service
+  service: name=jsondumpster enabled=yes state=restarted
+
+- name: Deploy nginx config
+  template: src=jsondumpster.nginx dest="{{ jsondumpster_nginx_available }}"
+
+- name: Enable nginx config
+  file:
+    src="{{ jsondumpster_nginx_available }}"
+    dest="{{ jsondumpster_nginx_enabled }}"
+    state=link
+
+- name: Delete default nginx config
+  file:
+    path=/etc/nginx/sites-enabled/default
+    state=absent
+
+- name: Enable and restart nginx service
+  service: name=nginx enabled=yes state=reloaded

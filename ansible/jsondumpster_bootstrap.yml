@@ -1,0 +1,78 @@
+---
+# Sets up a Ubuntu server for jsondumpster
+
+- hosts: localhost
+  tasks:
+    # - name: List available offers
+    #   azure_rm_virtualmachineimage_facts:
+    #     location: northeurope
+    #     publisher: Canonical
+    #     offer: UbuntuServer
+    #     sku: '16.04.0-LTS'
+
+    # - name: list offers
+    #   debug: var=azure_vmimages
+
+    - name: Create virtual network
+      azure_rm_virtualnetwork:
+        resource_group: marsonal
+        name: jsondumpster_vn
+        address_prefixes: "10.10.0.0/16"
+
+    - name: Add subnet
+      azure_rm_subnet:
+        resource_group: marsonal
+        name: jsondumpster_subnet
+        address_prefix: "10.10.0.0/24"
+        virtual_network: jsondumpster_vn
+
+    - name: Create public ip
+      azure_rm_publicipaddress:
+        resource_group: marsonal
+        allocation_method: Static
+        name: jsondumpster_publicip
+
+    - name: Create security group that allows SSH and HTTP connections
+      azure_rm_securitygroup:
+        resource_group: marsonal
+        name: jsondumpster_secgroup
+        rules:
+          - name: SSH
+            protocol: Tcp
+            destination_port_range: 22
+            access: Allow
+            priority: 101
+            direction: Inbound
+          - name: AllowHTTPFromHome
+            protocol: Tcp
+            destination_port_range: 80
+            access: Allow
+            priority: 102
+            direction: Inbound
+
+    - name: Create NIC
+      azure_rm_networkinterface:
+        resource_group: marsonal
+        name: jsondumpster_nic
+        virtual_network: jsondumpster_vn
+        subnet: jsondumpster_subnet
+        public_ip_name: jsondumpster_publicip
+        security_group: jsondumpster_secgroup
+
+    - name: Create virtual machine
+      azure_rm_virtualmachine:
+        resource_group: marsonal
+        name: jsondumpstervm
+        vm_size: Basic_A0
+        admin_username: martin
+        ssh_password_enabled: false
+        ssh_public_keys:
+          - path: /home/martin/.ssh/authorized_keys
+            key_data: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+        network_interfaces: jsondumpster_nic
+        state: present
+        image:
+          offer: UbuntuServer
+          publisher: Canonical
+          sku: "16.04.0-LTS"
+          version: latest

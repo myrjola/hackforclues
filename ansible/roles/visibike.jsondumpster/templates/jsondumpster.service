@@ -1,0 +1,12 @@
+[Unit]
+Description=gunicorn daemon
+After=network.target
+
+[Service]
+User={{ jsondumpster_user }}
+Group=www-data
+WorkingDirectory={{ jsondumpster_path }}
+ExecStart={{ jsondumpster_venv }}/bin/gunicorn --workers 3 --bind {{ jsondumpster_socket}} jsondumpster.wsgi:application
+
+[Install]
+WantedBy=multi-user.target

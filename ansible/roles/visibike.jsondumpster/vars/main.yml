@@ -1,0 +1,10 @@
+---
+# vars file for visibike.jsondumpster
+jsondumpster_db: jsondumpster
+jsondumpster_user: jsondumpster
+jsondumpster_root: /opt/jsondumpster
+jsondumpster_path: "{{jsondumpster_root}}/app"
+jsondumpster_socket: "unix:{{jsondumpster_root}}/jsondumpster.sock"
+jsondumpster_venv: "{{jsondumpster_root}}/venv"
+jsondumpster_nginx_available: /etc/nginx/sites-available/jsondumpster
+jsondumpster_nginx_enabled: /etc/nginx/sites-enabled/jsondumpster
