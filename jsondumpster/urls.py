@@ -16,6 +16,9 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 
+import dumpster.views
+
 urlpatterns = [
+    url(r'^dumpster/upload', dumpster.views.upload),
     url(r'^admin/', admin.site.urls),
 ]
