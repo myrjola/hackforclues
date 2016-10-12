@@ -79,8 +79,6 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'jsondumpster',
         'USER': 'jsondumpster',
-        'HOST': 'localhost',
-        'PORT': '',
     }
 }
 
