@@ -1,5 +1,20 @@
+{% if jsondumpster_letsencrypt %}
 server {
-    listen 80;
+    listen         80;
+    server_name {{ jsondumpster_hostname }};
+    return         301 https://$server_name$request_uri;
+}
+{% endif %}
+
+server {
+    {% if jsondumpster_letsencrypt %}
+      listen 443 ssl default_server;
+      ssl_certificate /etc/letsencrypt/live/{{ jsondumpster_hostname }}/fullchain.pem;
+      ssl_certificate_key /etc/letsencrypt/live/{{ jsondumpster_hostname }}/privkey.pem;
+    {% else %}
+      listen 80 default_server;
+    {% endif%}
+
     server_name {{ jsondumpster_hostname }};
 
     location = /favicon.ico { access_log off; log_not_found off; }
@@ -11,5 +26,10 @@ server {
     location / {
         include proxy_params;
         proxy_pass http://{{ jsondumpster_socket }};
+    }
+
+    # Needed for letsencrypt webroot authentication
+    location /.well-known/acme-challenge {
+        root {{ jsondumpster_letsencrypt_webroot_path }};
     }
 }

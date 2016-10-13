@@ -8,8 +8,14 @@
   service: name=jsondumpster state=stopped
   ignore_errors: yes
 
+- name: Install aptitude needed by system upgrade
+  apt: name=aptitude state=present
+
+- name: Upgrade system
+  apt: upgrade=safe
+
 - name: Install dependencies
-  apt: name={{ item }} state=present
+  apt: name={{ item }} state=latest
   with_items:
     - python-pip
     - python-dev
@@ -46,7 +52,7 @@
   file:
     path="{{ jsondumpster_root }}"
     state=directory
-    mode="755"
+    mode=755
     owner="{{ jsondumpster_user }}"
     group="{{ jsondumpster_user }}"
 
@@ -80,7 +86,7 @@
     path="{{ jsondumpster_path }}"
     state=directory
     recurse=yes
-    mode="755"
+    mode=755
     owner="{{ jsondumpster_user }}"
     group="{{ jsondumpster_www_group }}"
 
@@ -106,6 +112,10 @@
 - name: Enable and restart systemd service
   service: name=jsondumpster enabled=yes state=restarted
 
+- name: Set letsencrypt fact to false to deploy http-only version of nginx config
+  set_fact:
+    jsondumpster_letsencrypt: False
+
 - name: Deploy nginx config
   template: src=jsondumpster.nginx dest="{{ jsondumpster_nginx_available }}"
 
@@ -122,3 +132,48 @@
 
 - name: Enable and restart nginx service
   service: name=nginx enabled=yes state=reloaded
+
+# letsencrypt setup starts here
+
+- name: Install letsencrypt
+  apt: name=letsencrypt state=latest
+
+- name: Create letsencrypt webroot folder
+  file:
+    name="{{ jsondumpster_letsencrypt_webroot_path }}"
+    state=directory
+    group="{{ jsondumpster_www_group }}"
+    mode=755
+
+- name: Create letsencrypt config folder
+  file:
+    name="{{ jsondumpster_letsencrypt_config_directory }}"
+    state=directory
+
+- name: Deploy letsencrypt config
+  template:
+    src=jsondumpster.letsencrypt
+    dest="{{ jsondumpster_letsencrypt_config }}"
+
+- name: Check if certificate exists
+  stat:  path="{{ jsondumpster_cert_path }}"
+  register: jsondumpster_cert_found
+
+- name: Get the certificate
+  command: "letsencrypt certonly --config {{ jsondumpster_letsencrypt_config }} --agree-eula --agree-tos"
+  args:
+    creates="{{ jsondumpster_cert_path }}"
+  when: not jsondumpster_cert_found.stat.isdir
+
+- name: Set letsencrypt fact to true to deploy https version of nginx config
+  set_fact:
+    jsondumpster_letsencrypt: True
+
+- name: Deploy nginx config
+  template: src=jsondumpster.nginx dest="{{ jsondumpster_nginx_available }}"
+
+- name: Restart nginx service
+  service: name=nginx state=reloaded
+
+# TODO: schedule renewal `sudo letsencrypt renew` i already tested with --force
+# that it works

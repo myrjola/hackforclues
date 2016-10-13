@@ -1,0 +1,8 @@
+domains = {{ jsondumpster_hostname }}
+email = {{ jsondumpster_email }}
+# Disable ncurses
+text = True
+# authenticate by placing a file in the webroot (under
+# .well-known/acme-challenge/) and then letting letsencrypt fetch it
+authenticator = webroot
+webroot-path = {{ jsondumpster_letsencrypt_webroot_path }}

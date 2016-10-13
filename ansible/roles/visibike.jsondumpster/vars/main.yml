@@ -11,9 +11,13 @@ jsondumpster_nginx_available: /etc/nginx/sites-available/jsondumpster
 jsondumpster_nginx_enabled: /etc/nginx/sites-enabled/jsondumpster
 jsondumpster_manage_py: "{{ jsondumpster_path }}/manage.py"
 jsondumpster_www_group: www-data
-
+jsondumpster_letsencrypt_webroot_path: /var/www/letsencrypt
+jsondumpster_letsencrypt_config_directory: "/etc/letsencrypt/configs"
+jsondumpster_letsencrypt_config: "{{ jsondumpster_letsencrypt_config_directory }}/{{ jsondumpster_hostname }}.conf"
+jsondumpster_cert_path: "/etc/letsencrypt/live/{{ jsondumpster_hostname }}"
 
 # secret variables stored in vault in group_vars
 jsondumpster_secret_key: "{{ vault_jsondumpster_secret_key }}"
 jsondumpster_psql_password: "{{ vault_jsondumpster_psql_password }}"
 jsondumpster_hostname: "{{ vault_jsondumpster_hostname }}"
+jsondumpster_email: "{{ vault_jsondumpster_email }}"
