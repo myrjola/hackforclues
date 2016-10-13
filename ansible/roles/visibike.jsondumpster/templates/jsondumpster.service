@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 User={{ jsondumpster_user }}
-Group=www-data
+Group={{ jsondumpster_www_group }}
 WorkingDirectory={{ jsondumpster_path }}
 ExecStart={{ jsondumpster_venv }}/bin/gunicorn --workers 3 --bind {{ jsondumpster_socket}} jsondumpster.wsgi:application
 

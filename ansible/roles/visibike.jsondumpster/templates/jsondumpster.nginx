@@ -1,8 +1,12 @@
 server {
     listen 80;
-    server_name {{ ansible_host }};
+    server_name {{ jsondumpster_hostname }};
 
     location = /favicon.ico { access_log off; log_not_found off; }
+
+    location /static/ {
+        root {{ jsondumpster_path }};
+    }
 
     location / {
         include proxy_params;

@@ -4,6 +4,10 @@
 # - name: Add EPEL repository
 #   yum: name=epel-release state=present
 
+- name: Shut down service for maintenance
+  service: name=jsondumpster state=stopped
+  ignore_errors: yes
+
 - name: Install dependencies
   apt: name={{ item }} state=present
   with_items:
@@ -15,10 +19,6 @@
     - postgresql
     - postgresql-contrib
     - nginx
-
-# - name: setup postgresql
-#   command: postgresql-setup initdb
-#   ignore_errors: yes
 
 - name: Enable and start postgresql
   service: name=postgresql enabled=yes state=started
@@ -34,6 +34,7 @@
   postgresql_user:
     db="{{ jsondumpster_db }}"
     name="{{ jsondumpster_user }}"
+    password="{{ jsondumpster_psql_password }}"
   become_user: postgres
 
 - name: Delete app directory
@@ -56,19 +57,45 @@
     src="../../../../"
     dest="{{ jsondumpster_path }}"
 
+- name: Disable debug mode
+  lineinfile:
+    dest="{{ jsondumpster_settings }}"
+    regexp="^DEBUG[ =]"
+    line="DEBUG = False"
+
+- name: Change secret key
+  lineinfile:
+    dest="{{ jsondumpster_settings }}"
+    regexp="^SECRET_KEY[ =]"
+    line='SECRET_KEY = "{{ jsondumpster_secret_key }}"'
+
+- name: Add allowed hosts
+  lineinfile:
+    dest="{{ jsondumpster_settings }}"
+    regexp="^ALLOWED_HOSTS[ =]"
+    line='ALLOWED_HOSTS = ["{{ jsondumpster_hostname }}"]'
+
 - name: Set permissions
   file:
     path="{{ jsondumpster_path }}"
     state=directory
     recurse=yes
-    mode="700"
+    mode="755"
     owner="{{ jsondumpster_user }}"
-    group="{{ jsondumpster_user }}"
+    group="{{ jsondumpster_www_group }}"
 
 - name: Initialize virtualenv
   pip:
     requirements: "{{ jsondumpster_path }}/requirements.txt"
     virtualenv: "{{ jsondumpster_venv }}"
+
+- name: Run migrations
+  command: "{{ jsondumpster_venv }}/bin/python {{ jsondumpster_manage_py }} migrate"
+  become_user: "{{ jsondumpster_user }}"
+
+- name: Collect static files
+  command: "{{ jsondumpster_venv }}/bin/python {{ jsondumpster_manage_py }} collectstatic --noinput"
+  become_user: "{{ jsondumpster_user }}"
 
 - name: Deploy systemd service
   template: src=jsondumpster.service dest=/etc/systemd/system/jsondumpster.service
