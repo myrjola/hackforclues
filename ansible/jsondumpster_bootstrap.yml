@@ -2,6 +2,9 @@
 # Sets up a Ubuntu server for jsondumpster
 
 - hosts: localhost
+  vars:
+    jsondumpster_admin: jsondumpsteradmin
+    jsondumpster_resource_group: jsondumpster_rg
   tasks:
     # - name: List available offers
     #   azure_rm_virtualmachineimage_facts:
@@ -13,28 +16,40 @@
     # - name: list offers
     #   debug: var=azure_vmimages
 
+    - name: Delete the resource group
+      azure_rm_resourcegroup:
+        name: "{{ jsondumpster_resource_group }}"
+        state: absent
+        force: True
+
+    - name: Create the resource group
+      azure_rm_resourcegroup:
+        name: "{{ jsondumpster_resource_group }}"
+        location: northeurope
+
     - name: Create virtual network
       azure_rm_virtualnetwork:
-        resource_group: marsonal
+        resource_group: "{{ jsondumpster_resource_group }}"
         name: jsondumpster_vn
         address_prefixes: "10.10.0.0/16"
 
     - name: Add subnet
       azure_rm_subnet:
-        resource_group: marsonal
+        resource_group: "{{ jsondumpster_resource_group }}"
         name: jsondumpster_subnet
         address_prefix: "10.10.0.0/24"
         virtual_network: jsondumpster_vn
 
     - name: Create public ip
       azure_rm_publicipaddress:
-        resource_group: marsonal
+        resource_group: "{{ jsondumpster_resource_group }}"
         allocation_method: Static
         name: jsondumpster_publicip
+      register: publicip
 
-    - name: Create security group that allows SSH and HTTP connections
+    - name: Create security group that allows SSH and HTTP(S) connections
       azure_rm_securitygroup:
-        resource_group: marsonal
+        resource_group: "{{ jsondumpster_resource_group }}"
         name: jsondumpster_secgroup
         rules:
           - name: SSH
@@ -43,16 +58,22 @@
             access: Allow
             priority: 101
             direction: Inbound
-          - name: AllowHTTPFromHome
+          - name: AllowHTTP
             protocol: Tcp
             destination_port_range: 80
             access: Allow
             priority: 102
             direction: Inbound
+          - name: AllowHTTPS
+            protocol: Tcp
+            destination_port_range: 443
+            access: Allow
+            priority: 103
+            direction: Inbound
 
     - name: Create NIC
       azure_rm_networkinterface:
-        resource_group: marsonal
+        resource_group: "{{ jsondumpster_resource_group }}"
         name: jsondumpster_nic
         virtual_network: jsondumpster_vn
         subnet: jsondumpster_subnet
@@ -61,13 +82,13 @@
 
     - name: Create virtual machine
       azure_rm_virtualmachine:
-        resource_group: marsonal
+        resource_group: "{{ jsondumpster_resource_group }}"
         name: jsondumpstervm
         vm_size: Basic_A0
-        admin_username: martin
+        admin_username: "{{ jsondumpster_admin }}"
         ssh_password_enabled: false
         ssh_public_keys:
-          - path: /home/martin/.ssh/authorized_keys
+          - path: /home/{{ jsondumpster_admin }}/.ssh/authorized_keys
             key_data: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
         network_interfaces: jsondumpster_nic
         state: present
@@ -76,3 +97,6 @@
           publisher: Canonical
           sku: "16.04.0-LTS"
           version: latest
+
+    - name: Print public ip
+      debug: var=publicip.ip_address
