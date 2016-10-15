@@ -5,6 +5,7 @@
   vars:
     jsondumpster_admin: jsondumpsteradmin
     jsondumpster_resource_group: jsondumpster_rg
+    jsondumpster_delete_resource_group: False
   tasks:
     # - name: List available offers
     #   azure_rm_virtualmachineimage_facts:
@@ -21,6 +22,7 @@
         name: "{{ jsondumpster_resource_group }}"
         state: absent
         force: True
+      when: jsondumpster_delete_resource_group
 
     - name: Create the resource group
       azure_rm_resourcegroup:
