@@ -1,13 +1,17 @@
 import json
 
-from django.http import HttpResponse, HttpResponseBadRequest
-from dumpster.models import SensorData
+from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
-@csrf_exempt
-def upload(request):
-    payload_unicode = request.body.decode('utf-8')
-    payload = json.loads(payload_unicode)
-    sensordata = SensorData(payload=payload)
-    sensordata.save()
-    return HttpResponse("Data accepted")
+from rest_framework import viewsets
+
+from .serializers import SensorDataSerializer
+from .models import SensorData
+
+
+class SensorDataViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows SensorData to be viewed and edited
+    """
+    queryset = SensorData.objects.all().order_by('-timestamp')
+    serializer_class = SensorDataSerializer
