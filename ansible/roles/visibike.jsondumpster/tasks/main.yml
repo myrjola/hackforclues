@@ -175,5 +175,17 @@
 - name: Restart nginx service
   service: name=nginx state=reloaded
 
-# TODO: schedule renewal `sudo letsencrypt renew` i already tested with --force
-# that it works
+- name: Deploy certificate renewal service
+  template:
+    src=jsondumpster.letsencrypt.service
+    dest=/etc/systemd/system/letsencrypt.service
+
+- name: Deploy certificate renewal timer
+  template:
+    src=jsondumpster.letsencrypt.timer
+    dest="/etc/systemd/system/{{ jsondumpster_letsencrypt_timer }}"
+
+- name: Enable certificate renewal timer
+  service:
+    name="{{ jsondumpster_letsencrypt_timer }}"
+    enabled=yes

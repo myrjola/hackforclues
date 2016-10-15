@@ -15,6 +15,7 @@ jsondumpster_letsencrypt_webroot_path: /var/www/letsencrypt
 jsondumpster_letsencrypt_config_directory: "/etc/letsencrypt/configs"
 jsondumpster_letsencrypt_config: "{{ jsondumpster_letsencrypt_config_directory }}/{{ jsondumpster_hostname }}.conf"
 jsondumpster_cert_path: "/etc/letsencrypt/live/{{ jsondumpster_hostname }}"
+jsondumpster_letsencrypt_timer: letsencrypt.timer
 
 # secret variables stored in vault in group_vars
 jsondumpster_secret_key: "{{ vault_jsondumpster_secret_key }}"
