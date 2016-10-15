@@ -16,3 +16,5 @@ tests/report/
 /ansible/hosts
 /ansible/group_vars/webservers/vault.yml
 *.retry
+/.python-version
+/ansible/.python-version
