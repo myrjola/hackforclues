@@ -9,9 +9,9 @@ Getting started
 1. Install and setup [pyenv](https://github.com/yyuu/pyenv) and [postgresql](https://www.postgresql.org/)
 2. Run the following commands to set up your python environment:
 ```
-pyenv install 2.7.11
-pyenv virtualenv 2.7.11 visienv
-pyenv activate visienv
+pyenv install 3.5.2
+pyenv virtualenv 3.5.2 jsondumpsterenv
+pyenv activate jsondumpsterenv
 ```
 3. Now download the dependencies
 ```

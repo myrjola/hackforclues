@@ -17,10 +17,10 @@
 - name: Install dependencies
   apt: name={{ item }} state=latest
   with_items:
-    - python-pip
-    - python-dev
-    - python-psycopg2
-    - python-virtualenv
+    - python3-pip
+    - python3-dev
+    - python3-venv
+    - python-psycopg2 # Needed for postgresql modules
     - libpq-dev
     - postgresql
     - postgresql-contrib
@@ -92,8 +92,9 @@
 
 - name: Initialize virtualenv
   pip:
-    requirements: "{{ jsondumpster_path }}/requirements.txt"
-    virtualenv: "{{ jsondumpster_venv }}"
+    requirements="{{ jsondumpster_path }}/requirements.txt"
+    virtualenv="{{ jsondumpster_venv }}"
+    virtualenv_command=pyvenv
   become_user: "{{ jsondumpster_user }}"
 
 - name: Run migrations

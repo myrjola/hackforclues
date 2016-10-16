@@ -6,7 +6,7 @@ After=network.target
 User={{ jsondumpster_user }}
 Group={{ jsondumpster_www_group }}
 WorkingDirectory={{ jsondumpster_path }}
-ExecStart={{ jsondumpster_venv }}/bin/gunicorn --workers 3 --bind {{ jsondumpster_socket}} jsondumpster.wsgi:application
+ExecStart={{ jsondumpster_venv }}/bin/gunicorn --workers 1 --bind {{ jsondumpster_socket}} jsondumpster.wsgi:application
 
 [Install]
 WantedBy=multi-user.target
