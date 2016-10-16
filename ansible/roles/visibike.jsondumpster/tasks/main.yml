@@ -94,6 +94,7 @@
   pip:
     requirements: "{{ jsondumpster_path }}/requirements.txt"
     virtualenv: "{{ jsondumpster_venv }}"
+  become_user: "{{ jsondumpster_user }}"
 
 - name: Run migrations
   command: "{{ jsondumpster_venv }}/bin/python {{ jsondumpster_manage_py }} migrate"
@@ -106,6 +107,7 @@
 - name: Deploy systemd service
   template: src=jsondumpster.service dest=/etc/systemd/system/jsondumpster.service
 
+# TODO: systemctl module in Ansible 2.2
 - name: Reload daemon files
   command: systemctl daemon-reload
 
@@ -188,4 +190,27 @@
 - name: Enable certificate renewal timer
   service:
     name="{{ jsondumpster_letsencrypt_timer }}"
+    enabled=yes
+
+# Backup functionality
+- name: Install autopostgresqlbackup
+  apt: name=autopostgresqlbackup state=present
+
+- name: Deploy backup service
+  template:
+    src=autopostgresqlbackup.service
+    dest=/etc/systemd/system/autopostgresqlbackup.service
+
+- name: Deploy backup timer
+  template:
+    src=autopostgresqlbackup.timer
+    dest="/etc/systemd/system/{{ jsondumpster_autopostgresqlbackup_timer }}"
+
+# TODO: systemctl module in Ansible 2.2
+- name: Reload daemon files
+  command: systemctl daemon-reload
+
+- name: Enable backup timer
+  service:
+    name="{{ jsondumpster_autopostgresqlbackup_timer }}"
     enabled=yes
