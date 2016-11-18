@@ -23,3 +23,5 @@ python manage.py migrate
 python manage.py runserver
 ```
 5. Upload data to the service by posting JSON to http://localhost:8000/api/v1/sensordata
+
+Check the Django REST framework documentation for pointers on using the API http://www.django-rest-framework.org/
