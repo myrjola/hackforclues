@@ -22,5 +22,4 @@ pip install -r requirements.txt
 python manage.py migrate
 python manage.py runserver
 ```
-5. Upload data to the service by posting JSON to http://localhost/dumpster/upload
-
+5. Upload data to the service by posting JSON to http://localhost:8000/api/v1/sensordata
