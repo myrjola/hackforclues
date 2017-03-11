@@ -28,4 +28,4 @@ MIT
 Author Information
 ------------------
 
-Martin Yrjölä <https://bitbucket.org/myrjola/>
+Martin Yrjölä <https://github.com/myrjola>
