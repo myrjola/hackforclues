@@ -1,11 +1,11 @@
 ---
-# Sets up a Ubuntu server for jsondumpster
+# Sets up a Ubuntu server for hackforclues
 
 - hosts: localhost
   vars:
-    jsondumpster_admin: jsondumpsteradmin
-    jsondumpster_resource_group: jsondumpster_rg
-    jsondumpster_delete_resource_group: False
+    hackforclues_admin: hackforcluesadmin
+    hackforclues_resource_group: hackforclues_rg
+    hackforclues_delete_resource_group: False
   tasks:
     # - name: List available offers
     #   azure_rm_virtualmachineimage_facts:
@@ -19,40 +19,40 @@
 
     - name: Delete the resource group
       azure_rm_resourcegroup:
-        name: "{{ jsondumpster_resource_group }}"
+        name: "{{ hackforclues_resource_group }}"
         state: absent
         force: True
-      when: jsondumpster_delete_resource_group
+      when: hackforclues_delete_resource_group
 
     - name: Create the resource group
       azure_rm_resourcegroup:
-        name: "{{ jsondumpster_resource_group }}"
+        name: "{{ hackforclues_resource_group }}"
         location: northeurope
 
     - name: Create virtual network
       azure_rm_virtualnetwork:
-        resource_group: "{{ jsondumpster_resource_group }}"
-        name: jsondumpster_vn
+        resource_group: "{{ hackforclues_resource_group }}"
+        name: hackforclues_vn
         address_prefixes: "10.10.0.0/16"
 
     - name: Add subnet
       azure_rm_subnet:
-        resource_group: "{{ jsondumpster_resource_group }}"
-        name: jsondumpster_subnet
+        resource_group: "{{ hackforclues_resource_group }}"
+        name: hackforclues_subnet
         address_prefix: "10.10.0.0/24"
-        virtual_network: jsondumpster_vn
+        virtual_network: hackforclues_vn
 
     - name: Create public ip
       azure_rm_publicipaddress:
-        resource_group: "{{ jsondumpster_resource_group }}"
+        resource_group: "{{ hackforclues_resource_group }}"
         allocation_method: Static
-        name: jsondumpster_publicip
+        name: hackforclues_publicip
       register: publicip
 
     - name: Create security group that allows SSH and HTTP(S) connections
       azure_rm_securitygroup:
-        resource_group: "{{ jsondumpster_resource_group }}"
-        name: jsondumpster_secgroup
+        resource_group: "{{ hackforclues_resource_group }}"
+        name: hackforclues_secgroup
         rules:
           - name: SSH
             protocol: Tcp
@@ -75,24 +75,24 @@
 
     - name: Create NIC
       azure_rm_networkinterface:
-        resource_group: "{{ jsondumpster_resource_group }}"
-        name: jsondumpster_nic
-        virtual_network: jsondumpster_vn
-        subnet: jsondumpster_subnet
-        public_ip_name: jsondumpster_publicip
-        security_group: jsondumpster_secgroup
+        resource_group: "{{ hackforclues_resource_group }}"
+        name: hackforclues_nic
+        virtual_network: hackforclues_vn
+        subnet: hackforclues_subnet
+        public_ip_name: hackforclues_publicip
+        security_group: hackforclues_secgroup
 
     - name: Create virtual machine
       azure_rm_virtualmachine:
-        resource_group: "{{ jsondumpster_resource_group }}"
-        name: jsondumpstervm
+        resource_group: "{{ hackforclues_resource_group }}"
+        name: hackforcluesvm
         vm_size: Basic_A0
-        admin_username: "{{ jsondumpster_admin }}"
+        admin_username: "{{ hackforclues_admin }}"
         ssh_password_enabled: false
         ssh_public_keys:
-          - path: /home/{{ jsondumpster_admin }}/.ssh/authorized_keys
+          - path: /home/{{ hackforclues_admin }}/.ssh/authorized_keys
             key_data: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
-        network_interfaces: jsondumpster_nic
+        network_interfaces: hackforclues_nic
         state: present
         image:
           offer: UbuntuServer

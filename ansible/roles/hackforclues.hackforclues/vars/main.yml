@@ -1,0 +1,25 @@
+---
+# vars file for hackforclues.hackforclues
+hackforclues_db: hackforclues
+hackforclues_user: hackforclues
+hackforclues_root: /opt/hackforclues
+hackforclues_path: "{{hackforclues_root}}/app"
+hackforclues_settings: "{{hackforclues_root}}/app/hackforclues/settings.py"
+hackforclues_socket: "unix:{{hackforclues_root}}/hackforclues.sock"
+hackforclues_venv: "{{hackforclues_root}}/venv"
+hackforclues_nginx_available: /etc/nginx/sites-available/hackforclues
+hackforclues_nginx_enabled: /etc/nginx/sites-enabled/hackforclues
+hackforclues_manage_py: "{{ hackforclues_path }}/manage.py"
+hackforclues_www_group: www-data
+hackforclues_letsencrypt_webroot_path: /var/www/letsencrypt
+hackforclues_letsencrypt_config_directory: "/etc/letsencrypt/configs"
+hackforclues_letsencrypt_config: "{{ hackforclues_letsencrypt_config_directory }}/{{ hackforclues_hostname }}.conf"
+hackforclues_cert_path: "/etc/letsencrypt/live/{{ hackforclues_hostname }}"
+hackforclues_letsencrypt_timer: letsencrypt.timer
+hackforclues_autopostgresqlbackup_timer: autopostgresqlbackup.timer
+
+# secret variables stored in vault in group_vars
+hackforclues_secret_key: "{{ vault_hackforclues_secret_key }}"
+hackforclues_psql_password: "{{ vault_hackforclues_psql_password }}"
+hackforclues_hostname: "{{ vault_hackforclues_hostname }}"
+hackforclues_email: "{{ vault_hackforclues_email }}"

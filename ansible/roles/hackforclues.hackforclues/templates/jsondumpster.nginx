@@ -1,0 +1,35 @@
+{% if hackforclues_letsencrypt %}
+server {
+    listen         80;
+    server_name {{ hackforclues_hostname }};
+    return         301 https://$server_name$request_uri;
+}
+{% endif %}
+
+server {
+    {% if hackforclues_letsencrypt %}
+      listen 443 ssl default_server;
+      ssl_certificate /etc/letsencrypt/live/{{ hackforclues_hostname }}/fullchain.pem;
+      ssl_certificate_key /etc/letsencrypt/live/{{ hackforclues_hostname }}/privkey.pem;
+    {% else %}
+      listen 80 default_server;
+    {% endif%}
+
+    server_name {{ hackforclues_hostname }};
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+
+    location /static/ {
+        root {{ hackforclues_path }};
+    }
+
+    location / {
+        include proxy_params;
+        proxy_pass http://{{ hackforclues_socket }};
+    }
+
+    # Needed for letsencrypt webroot authentication
+    location /.well-known/acme-challenge {
+        root {{ hackforclues_letsencrypt_webroot_path }};
+    }
+}

@@ -1,4 +1,4 @@
-jsondumpster
+hackforclues
 ============
 
 Least effort platform to dump sensor data from the 5G bike to a cloud service.
@@ -10,8 +10,8 @@ Getting started
 2. Run the following commands to set up your python environment:
 ```
 pyenv install 3.5.2
-pyenv virtualenv 3.5.2 jsondumpsterenv
-pyenv activate jsondumpsterenv
+pyenv virtualenv 3.5.2 hackforcluesenv
+pyenv activate hackforcluesenv
 ```
 3. Now download the dependencies
 ```

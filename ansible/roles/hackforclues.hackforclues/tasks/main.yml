@@ -1,11 +1,11 @@
 ---
-# tasks file for visibike.jsondumpster
+# tasks file for hackforclues.hackforclues
 
 # - name: Add EPEL repository
 #   yum: name=epel-release state=present
 
 - name: Shut down service for maintenance
-  service: name=jsondumpster state=stopped
+  service: name=hackforclues state=stopped
   ignore_errors: yes
 
 - name: Install aptitude needed by system upgrade
@@ -29,103 +29,103 @@
 - name: Enable and start postgresql
   service: name=postgresql enabled=yes state=started
 
-- name: Create jsondumpster database
-  postgresql_db: name="{{ jsondumpster_db }}"
+- name: Create hackforclues database
+  postgresql_db: name="{{ hackforclues_db }}"
   become_user: postgres
 
-- name: Create jsondumpster user
-  user: name="{{ jsondumpster_user }}"
+- name: Create hackforclues user
+  user: name="{{ hackforclues_user }}"
 
-- name: Create jsondumpster postgres user
+- name: Create hackforclues postgres user
   postgresql_user:
-    db="{{ jsondumpster_db }}"
-    name="{{ jsondumpster_user }}"
-    password="{{ jsondumpster_psql_password }}"
+    db="{{ hackforclues_db }}"
+    name="{{ hackforclues_user }}"
+    password="{{ hackforclues_psql_password }}"
   become_user: postgres
 
 - name: Delete app directory
   file:
-    path="{{ jsondumpster_path }}"
+    path="{{ hackforclues_path }}"
     state=absent
 
 - name: Create service root folder
   file:
-    path="{{ jsondumpster_root }}"
+    path="{{ hackforclues_root }}"
     state=directory
     mode=755
-    owner="{{ jsondumpster_user }}"
-    group="{{ jsondumpster_user }}"
+    owner="{{ hackforclues_user }}"
+    group="{{ hackforclues_user }}"
 
 # TODO: there is certainly a better way to deploy the code than rsyncing it
 # over.
 - name: Copy over app
   synchronize:
     src="../../../../"
-    dest="{{ jsondumpster_path }}"
+    dest="{{ hackforclues_path }}"
 
 - name: Disable debug mode
   lineinfile:
-    dest="{{ jsondumpster_settings }}"
+    dest="{{ hackforclues_settings }}"
     regexp="^DEBUG[ =]"
     line="DEBUG = False"
 
 - name: Change secret key
   lineinfile:
-    dest="{{ jsondumpster_settings }}"
+    dest="{{ hackforclues_settings }}"
     regexp="^SECRET_KEY[ =]"
-    line='SECRET_KEY = "{{ jsondumpster_secret_key }}"'
+    line='SECRET_KEY = "{{ hackforclues_secret_key }}"'
 
 - name: Add allowed hosts
   lineinfile:
-    dest="{{ jsondumpster_settings }}"
+    dest="{{ hackforclues_settings }}"
     regexp="^ALLOWED_HOSTS[ =]"
-    line='ALLOWED_HOSTS = ["{{ jsondumpster_hostname }}"]'
+    line='ALLOWED_HOSTS = ["{{ hackforclues_hostname }}"]'
 
 - name: Set permissions
   file:
-    path="{{ jsondumpster_path }}"
+    path="{{ hackforclues_path }}"
     state=directory
     recurse=yes
     mode=755
-    owner="{{ jsondumpster_user }}"
-    group="{{ jsondumpster_www_group }}"
+    owner="{{ hackforclues_user }}"
+    group="{{ hackforclues_www_group }}"
 
 - name: Initialize virtualenv
   pip:
-    requirements="{{ jsondumpster_path }}/requirements.txt"
-    virtualenv="{{ jsondumpster_venv }}"
+    requirements="{{ hackforclues_path }}/requirements.txt"
+    virtualenv="{{ hackforclues_venv }}"
     virtualenv_command=pyvenv
-  become_user: "{{ jsondumpster_user }}"
+  become_user: "{{ hackforclues_user }}"
 
 - name: Run migrations
-  command: "{{ jsondumpster_venv }}/bin/python {{ jsondumpster_manage_py }} migrate"
-  become_user: "{{ jsondumpster_user }}"
+  command: "{{ hackforclues_venv }}/bin/python {{ hackforclues_manage_py }} migrate"
+  become_user: "{{ hackforclues_user }}"
 
 - name: Collect static files
-  command: "{{ jsondumpster_venv }}/bin/python {{ jsondumpster_manage_py }} collectstatic --noinput"
-  become_user: "{{ jsondumpster_user }}"
+  command: "{{ hackforclues_venv }}/bin/python {{ hackforclues_manage_py }} collectstatic --noinput"
+  become_user: "{{ hackforclues_user }}"
 
 - name: Deploy systemd service
-  template: src=jsondumpster.service dest=/etc/systemd/system/jsondumpster.service
+  template: src=hackforclues.service dest=/etc/systemd/system/hackforclues.service
 
 # TODO: systemctl module in Ansible 2.2
 - name: Reload daemon files
   command: systemctl daemon-reload
 
 - name: Enable and restart systemd service
-  service: name=jsondumpster enabled=yes state=restarted
+  service: name=hackforclues enabled=yes state=restarted
 
 - name: Set letsencrypt fact to false to deploy http-only version of nginx config
   set_fact:
-    jsondumpster_letsencrypt: False
+    hackforclues_letsencrypt: False
 
 - name: Deploy nginx config
-  template: src=jsondumpster.nginx dest="{{ jsondumpster_nginx_available }}"
+  template: src=hackforclues.nginx dest="{{ hackforclues_nginx_available }}"
 
 - name: Enable nginx config
   file:
-    src="{{ jsondumpster_nginx_available }}"
-    dest="{{ jsondumpster_nginx_enabled }}"
+    src="{{ hackforclues_nginx_available }}"
+    dest="{{ hackforclues_nginx_enabled }}"
     state=link
 
 - name: Delete default nginx config
@@ -143,54 +143,54 @@
 
 - name: Create letsencrypt webroot folder
   file:
-    name="{{ jsondumpster_letsencrypt_webroot_path }}"
+    name="{{ hackforclues_letsencrypt_webroot_path }}"
     state=directory
-    group="{{ jsondumpster_www_group }}"
+    group="{{ hackforclues_www_group }}"
     mode=755
 
 - name: Create letsencrypt config folder
   file:
-    name="{{ jsondumpster_letsencrypt_config_directory }}"
+    name="{{ hackforclues_letsencrypt_config_directory }}"
     state=directory
 
 - name: Deploy letsencrypt config
   template:
-    src=jsondumpster.letsencrypt
-    dest="{{ jsondumpster_letsencrypt_config }}"
+    src=hackforclues.letsencrypt
+    dest="{{ hackforclues_letsencrypt_config }}"
 
 - name: Check if certificate exists
-  stat:  path="{{ jsondumpster_cert_path }}"
-  register: jsondumpster_cert_found
+  stat:  path="{{ hackforclues_cert_path }}"
+  register: hackforclues_cert_found
 
 - name: Get the certificate
-  command: "letsencrypt certonly --config {{ jsondumpster_letsencrypt_config }} --agree-eula --agree-tos"
+  command: "letsencrypt certonly --config {{ hackforclues_letsencrypt_config }} --agree-eula --agree-tos"
   args:
-    creates="{{ jsondumpster_cert_path }}"
-  when: not jsondumpster_cert_found.stat.isdir
+    creates="{{ hackforclues_cert_path }}"
+  when: not hackforclues_cert_found.stat.isdir
 
 - name: Set letsencrypt fact to true to deploy https version of nginx config
   set_fact:
-    jsondumpster_letsencrypt: True
+    hackforclues_letsencrypt: True
 
 - name: Deploy nginx config
-  template: src=jsondumpster.nginx dest="{{ jsondumpster_nginx_available }}"
+  template: src=hackforclues.nginx dest="{{ hackforclues_nginx_available }}"
 
 - name: Restart nginx service
   service: name=nginx state=reloaded
 
 - name: Deploy certificate renewal service
   template:
-    src=jsondumpster.letsencrypt.service
+    src=hackforclues.letsencrypt.service
     dest=/etc/systemd/system/letsencrypt.service
 
 - name: Deploy certificate renewal timer
   template:
-    src=jsondumpster.letsencrypt.timer
-    dest="/etc/systemd/system/{{ jsondumpster_letsencrypt_timer }}"
+    src=hackforclues.letsencrypt.timer
+    dest="/etc/systemd/system/{{ hackforclues_letsencrypt_timer }}"
 
 - name: Enable certificate renewal timer
   service:
-    name="{{ jsondumpster_letsencrypt_timer }}"
+    name="{{ hackforclues_letsencrypt_timer }}"
     enabled=yes
 
 # Backup functionality
@@ -205,7 +205,7 @@
 - name: Deploy backup timer
   template:
     src=autopostgresqlbackup.timer
-    dest="/etc/systemd/system/{{ jsondumpster_autopostgresqlbackup_timer }}"
+    dest="/etc/systemd/system/{{ hackforclues_autopostgresqlbackup_timer }}"
 
 # TODO: systemctl module in Ansible 2.2
 - name: Reload daemon files
@@ -213,5 +213,5 @@
 
 - name: Enable backup timer
   service:
-    name="{{ jsondumpster_autopostgresqlbackup_timer }}"
+    name="{{ hackforclues_autopostgresqlbackup_timer }}"
     enabled=yes

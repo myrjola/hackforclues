@@ -1,7 +1,7 @@
-Visibike JSONdumpster deployer
+HackForClues deployer
 =====================================
 
-Deploys the jsondumpster service using nginx, postgresql and gunicorn.
+Deploys the hackforclues service using nginx, postgresql and gunicorn.
 Certificates are set up with Let's Encrypt.
 
 Requirements
@@ -15,10 +15,10 @@ Role Variables
 
 These secrets are good to store in a vault outside of the repo
 
-- vault_jsondumpster_secret_key: Django secret key
-- vault_jsondumpster_psql_password: password for postgres
-- vault_jsondumpster_hostname: Domain for the service
-- vault_jsondumpster_email: Email that is reported to letsencrypt
+- vault_hackforclues_secret_key: Django secret key
+- vault_hackforclues_psql_password: password for postgres
+- vault_hackforclues_hostname: Domain for the service
+- vault_hackforclues_email: Email that is reported to letsencrypt
 
 License
 -------

@@ -1,7 +1,7 @@
 galaxy_info:
   author: Martin Yrjölä
-  description: Install jsondumpster to a CentOS 7 host
-  company: Visibike
+  description: Install hackforclues to a CentOS 7 host
+  company: HackForClues
 
   # If the issue tracker for your role is not on github, uncomment the
   # next line and provide a value
