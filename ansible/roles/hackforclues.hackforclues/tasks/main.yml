@@ -159,14 +159,14 @@
     dest="{{ hackforclues_letsencrypt_config }}"
 
 - name: Check if certificate exists
-  stat:  path="{{ hackforclues_cert_path }}"
+  stat: path="{{ hackforclues_cert_path }}"
   register: hackforclues_cert_found
 
 - name: Get the certificate
-  command: "letsencrypt certonly --config {{ hackforclues_letsencrypt_config }} --agree-eula --agree-tos"
+  command: "letsencrypt certonly --config {{ hackforclues_letsencrypt_config }} --agree-tos"
   args:
     creates="{{ hackforclues_cert_path }}"
-  when: not hackforclues_cert_found.stat.isdir
+  when: not hackforclues_cert_found.stat.exists
 
 - name: Set letsencrypt fact to true to deploy https version of nginx config
   set_fact:
