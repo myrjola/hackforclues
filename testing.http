@@ -1,0 +1,31 @@
+# A testing file using https://github.com/pashky/restclient.el
+
+:apiurl = http://kulturarvsdata.se/ksamsok/api
+:searchurl = :apiurl?method=search&hitsPerPage=10&x-api=hfswe
+
+# Bounding box
+
+GET :searchurl&query=boundingBox=/RT90%20%221628000%206585000%201628490.368%206585865.547%22
+
+# Another example query
+
+GET :searchurl&query=itemDescription=%22Boplats%22+and+parishName=%22Stenkyrka%22
+
+# I want to find images from Kungsträdgården. Let's try to narrow it down to
+# interesting ones.
+
+# This query returns the only picture about the Molin's fountain with geo data.
+
+GET :searchurl&query=text="Fontänskulptur i brons av Johan Peter Molin"
+
+# Let's try the mediaMotiveWord. This returned two additional images
+
+GET :searchurl&query=mediaMotiveWord="Kungsträdgården"
+
+# Can we create a bounding box to get images close by? The order is west south east north
+
+GET :searchurl&query=boundingBox=/WGS84"18.0717608285980 59.3307800539630 18.0717608285985 59.3307800539640"
+
+# Let's make the bounding box bigger. According to http://gis.stackexchange.com/questions/8650/measuring-accuracy-of-latitude-and-longitude/8674#8674 we should get about 100 meters by modifying the third decimal.
+
+GET :searchurl&query=boundingBox=/WGS84"18.0707608285980 59.3297800539630 18.0727608285985 59.3317800539640"
