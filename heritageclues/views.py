@@ -19,14 +19,15 @@ def clue1_nearby_pictures(request):
     # Find only images
     image_path = "./rdf:Description/ns5:lowresSource"
     rdf_records = [record for record in rdf_records
-                   if record.find(image_path, ns)
-                   is not None]
+                   if record.find(image_path, ns) is not None]
 
+    label_path = "./rdf:Description/ns5:presentation/pres:item/pres:id"
     nearby_pictures = [
         {
-            'image': rdf_record.find(image_path, ns).text
+            'label': record.find(label_path, ns).text,
+            'image': record.find(image_path, ns).text
         }
-        for rdf_record in rdf_records
+        for record in rdf_records
     ]
 
     return JsonResponse(nearby_pictures, safe=False)
