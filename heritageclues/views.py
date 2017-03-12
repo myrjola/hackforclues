@@ -10,14 +10,35 @@ def parse_coordinates(coordinate_str):
     return {'lat': coords[0], 'lon': coords[1]}
 
 
-def clue1_nearby_pictures(request):
+def clue1_nearby_pictures_view(request):
     '''Returns the nearby pictures to our first clue, which is the Molin's fountain
 in Kungsträdgården.'''
-    response = requests.get('http://kulturarvsdata.se/ksamsok/api?' +
-                            'method=search&hitsPerPage=10&x-api=hfswe' +
-                            '&query=boundingBox=/WGS84%22' +
-                            '18.0707608285980%2059.3297800539630' +
-                            '%2018.0727608285985%2059.3317800539640%22')
+    return nearby_pictures(18.0717608285984, 59.3307800539639)
+
+
+def nearby_pictures_view(request):
+    '''Returns the nearby pictures to the coordinates given in the 'lat' and 'lon'
+GET parameters'''
+    lat = float(request.GET['lat'])
+    lon = float(request.GET['lon'])
+    return nearby_pictures(lat, lon)
+
+
+def nearby_pictures(lat, lon):
+    '''Returns the nearby pictures to the given coordinates.'''
+    # The third decimal point
+    delta = 0.001
+
+    west = lat - delta
+    east = lat + delta
+    south = lon - delta
+    north = lon + delta
+    query_url = ('http://kulturarvsdata.se/ksamsok/api?' +
+                 'method=search&hitsPerPage=10&x-api=hfswe' +
+                 '&query=boundingBox=/WGS84%22%20' +
+                 '%20'.join([str(dir) for dir in [west, south, east, north]]))
+
+    response = requests.get(query_url)
     nearby_records = ElementTree.fromstring(response.content)
 
     ns = {
@@ -27,6 +48,8 @@ in Kungsträdgården.'''
         'gml': 'http://www.opengis.net/gml'
     }
 
+    # According to http://gis.stackexchange.com/a/8674 we should move about 100
+    # meters by modifying the third decimal.
     rdf_records = [record.find("rdf:RDF", ns)
                    for record in nearby_records.iter('record')]
 
