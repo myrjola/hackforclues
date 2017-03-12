@@ -57,12 +57,15 @@ def nearby_pictures(lat, lon):
     rdf_records = [record for record in rdf_records
                    if record.find(image_path, ns) is not None]
 
-    label_path = "./rdf:Description/ns5:presentation/pres:item/pres:id"
+    presentation_path = "./rdf:Description/ns5:presentation/pres:item/"
+    label_path = presentation_path + "pres:id"
+    description_path = presentation_path + "pres:description"
     coord_path = "./rdf:Description/ns5:coordinates/gml:Point/gml:coordinates"
     nearby_pictures = [
         {
             'label': record.find(label_path, ns).text,
             'image': record.find(image_path, ns).text,
+            'description': record.find(description_path, ns).text,
             'coordinates': parse_coordinates(record.find(coord_path, ns).text)
         }
         for record in rdf_records
