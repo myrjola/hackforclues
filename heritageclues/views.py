@@ -26,7 +26,8 @@ GET parameters'''
 
 def nearby_pictures(lat, lon):
     '''Returns the nearby pictures to the given coordinates.'''
-    # The third decimal point
+    # According to http://gis.stackexchange.com/a/8674 we should move about 100
+    # meters by modifying the third decimal.
     delta = 0.001
 
     west = lat - delta
@@ -48,8 +49,6 @@ def nearby_pictures(lat, lon):
         'gml': 'http://www.opengis.net/gml'
     }
 
-    # According to http://gis.stackexchange.com/a/8674 we should move about 100
-    # meters by modifying the third decimal.
     rdf_records = [record.find("rdf:RDF", ns)
                    for record in nearby_records.iter('record')]
 
